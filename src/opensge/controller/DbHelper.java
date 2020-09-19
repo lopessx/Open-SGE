@@ -4,11 +4,10 @@
  * and open the template in the editor.
  */
 package opensge.controller;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 /**
- *
+ *  Manages the creation of the database and tables
  * @author emanuel
  */
 
@@ -16,56 +15,65 @@ import java.sql.SQLException;
 
 public class DbHelper {
    
+    private final SqliteConnection sqliteConnection;
+   
+    public DbHelper(SqliteConnection sConnection){
+        this.sqliteConnection = sConnection;
+    }
     
-    private Connection connection;
-    
-    
-    /**
-     * Create or open the connection to the SQLite database
-     * @return 
-     */
-    public boolean connect(){
+    public void createTables(){
+        
+        boolean isConnected = false;
+        
+        String sqlProduct = "CREATE TABLE IF NOT EXISTS tbl_product"
+                +"("
+                +"id integer PRIMARY KEY,"
+                +"name text NOT NULL,"
+                +"stock integer NOT NULL,"
+                +"price real NOT NULL"
+                +");";
+        
+        String sqlCashier = "CREATE TABLE IF NOT EXISTS tbl_cashier"
+                +"("
+                +"id integer PRIMARY KEY,"
+                +"date text NOT NULL,"
+                +"value_day real NOT NULL"
+                +");";
+        
+        String sqlCashierForProducts = "CREATE TABLE IF NOT EXISTS tbl_cashier_product"
+                +"("
+                +"id integer PRIMARY KEY,"
+                +"id_product integer NOT NULL,"
+                +"id_cashier integer NOT NULL,"
+                +"total_value real NOT NULL,"
+                +"quantity integer NOT NULL,"
+                +"FOREIGN KEY (id_product) REFERENCES tbl_product (id),"
+                +"FOREIGN KEY (id_cashier) REFERENCES tbl_cashier (id)"
+                +");";
         
         try{
             
-            String url = "jdbc:sqlite:database_lite/database_sge.db";
+            isConnected = this.sqliteConnection.connect();
             
-            this.connection = DriverManager.getConnection(url);
+            Statement stmt = this.sqliteConnection.getStatement();
+            stmt.execute(sqlProduct);
+            stmt.execute(sqlCashier);
+            stmt.execute(sqlCashierForProducts);
+            
+            System.out.println("tables created");
             
         }catch(SQLException e){
             
             System.out.println(e.getMessage());
-            return false;
             
-        }
-        
-        System.out.println("Connection success");
-        
-        return true;
-    }
-    
-    /**
-     * Close the connection to the SQLite database
-     * @return 
-     */
-    public boolean disconnect(){
-        
-        try{
-            
-            if(this.connection.isClosed() == false){
-                this.connection.close();
+        }finally{
+            if(isConnected){
+                this.sqliteConnection.disconnect();
             }
-            
-        }catch(SQLException e){
-            
-            System.out.println(e.getMessage());
-            return false;
         }
         
-        System.out.println("Disconnection success");
-        
-        return true;
     }
+    
     
 }
 
