@@ -6,6 +6,7 @@
 package opensge;
 
 import opensge.controller.DbHelper;
+import opensge.controller.SqliteConnection;
 
 
 /**
@@ -20,10 +21,10 @@ public class OpenSGE {
     public static void main(String[] args) {
         // TODO code application logic here
         
-        DbHelper sqliteConnection = new DbHelper();
-        sqliteConnection.connect();
-        sqliteConnection.disconnect();
+        SqliteConnection sqliteConnection = new SqliteConnection();
+        DbHelper dbHelper = new DbHelper(sqliteConnection);
         
+        dbHelper.createTables();
         
     }
     
